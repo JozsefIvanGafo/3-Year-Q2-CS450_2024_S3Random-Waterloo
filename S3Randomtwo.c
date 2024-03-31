@@ -51,25 +51,25 @@ typedef struct {
 // ****                   function declarations                       ****
 // ****                                                               ****
 // ***********************************************************************
-cache_t *S3Random_init(const common_cache_params_t ccache_params,
+cache_t *S3Randomtwo_init(const common_cache_params_t ccache_params,
                      const char *cache_specific_params);
-static void S3Random_free(cache_t *cache);
-static bool S3Random_get(cache_t *cache, const request_t *req);
+static void S3Randomtwo_free(cache_t *cache);
+static bool S3Randomtwo_get(cache_t *cache, const request_t *req);
 
-static cache_obj_t *S3Random_find(cache_t *cache, const request_t *req,
+static cache_obj_t *S3Randomtwo_find(cache_t *cache, const request_t *req,
                                 const bool update_cache);
-static cache_obj_t *S3Random_insert(cache_t *cache, const request_t *req);
-static cache_obj_t *S3Random_to_evict(cache_t *cache, const request_t *req);
-static void S3Random_evict(cache_t *cache, const request_t *req);
-static bool S3Random_remove(cache_t *cache, const obj_id_t obj_id);
-static inline int64_t S3Random_get_occupied_byte(const cache_t *cache);
-static inline int64_t S3Random_get_n_obj(const cache_t *cache);
-static inline bool S3Random_can_insert(cache_t *cache, const request_t *req);
-static void S3Random_parse_params(cache_t *cache,
+static cache_obj_t *S3Randomtwo_insert(cache_t *cache, const request_t *req);
+static cache_obj_t *S3Randomtwo_to_evict(cache_t *cache, const request_t *req);
+static void S3Randomtwo_evict(cache_t *cache, const request_t *req);
+static bool S3Randomtwo_remove(cache_t *cache, const obj_id_t obj_id);
+static inline int64_t S3Randomtwo_get_occupied_byte(const cache_t *cache);
+static inline int64_t S3Randomtwo_get_n_obj(const cache_t *cache);
+static inline bool S3Randomtwo_can_insert(cache_t *cache, const request_t *req);
+static void S3Randomtwo_parse_params(cache_t *cache,
                                 const char *cache_specific_params);
 
-static void S3Random_evict_small(cache_t *cache, const request_t *req);
-static void S3Random_evict_main(cache_t *cache, const request_t *req);
+static void S3Randomtwo_evict_small(cache_t *cache, const request_t *req);
+static void S3Randomtwo_evict_main(cache_t *cache, const request_t *req);
 
 // ***********************************************************************
 // ****                                                               ****
@@ -77,24 +77,24 @@ static void S3Random_evict_main(cache_t *cache, const request_t *req);
 // ****                                                               ****
 // ***********************************************************************
 
-cache_t *S3Random_init(const common_cache_params_t ccache_params,
+cache_t *S3Randomtwo_init(const common_cache_params_t ccache_params,
                      const char *cache_specific_params) {
     //We define creqte the cache structure init
     cache_t *cache =
-      cache_struct_init("S3Random", ccache_params, cache_specific_params);
+      cache_struct_init("S3Randomtwo", ccache_params, cache_specific_params);
 
     //We define the new functions of the cache with the new structure
-    cache->cache_init = S3Random_init;
-    cache->cache_free = S3Random_free;
-    cache->get = S3Random_get;
-    cache->find = S3Random_find;
-    cache->insert = S3Random_insert;
-    cache->evict = S3Random_evict;
-    cache->remove = S3Random_remove;
-    cache->to_evict = S3Random_to_evict;
-    cache->get_n_obj = S3Random_get_n_obj;
-    cache->get_occupied_byte = S3Random_get_occupied_byte;
-    cache->can_insert = S3Random_can_insert;    
+    cache->cache_init = S3Randomtwo_init;
+    cache->cache_free = S3Randomtwo_free;
+    cache->get = S3Randomtwo_get;
+    cache->find = S3Randomtwo_find;
+    cache->insert = S3Randomtwo_insert;
+    cache->evict = S3Randomtwo_evict;
+    cache->remove = S3Randomtwo_remove;
+    cache->to_evict = S3Randomtwo_to_evict;
+    cache->get_n_obj = S3Randomtwo_get_n_obj;
+    cache->get_occupied_byte = S3Randomtwo_get_occupied_byte;
+    cache->can_insert = S3Randomtwo_can_insert;    
 
     cache->obj_md_size = 0; 
 
@@ -122,13 +122,13 @@ cache_t *S3Random_init(const common_cache_params_t ccache_params,
     common_cache_params_t local_cache_param = ccache_params;
     local_cache_param.cache_size = small_size;
     //create small cache
-    params->small_random = Random_init(local_cache_param, NULL);   
+    params->small_random = RandomTwo_init(local_cache_param, NULL);   
     //create ghost cache
     local_cache_param.cache_size= ghost_cache_size;
-    params->ghost_random=Random_init(local_cache_param,NULL);
+    params->ghost_random=RandomTwo_init(local_cache_param,NULL);
     //create main cache
     local_cache_param.cache_size = main_cache_size;
-    params->main_random=Random_init(local_cache_param,NULL);
+    params->main_random=RandomTwo_init(local_cache_param,NULL);
 
     //We return cache
     return cache;
@@ -139,7 +139,7 @@ cache_t *S3Random_init(const common_cache_params_t ccache_params,
  *
  * @param cache
  */
-static void S3Random_free(cache_t *cache) {
+static void S3Randomtwo_free(cache_t *cache) {
     
     S3Random2_params_t *params = (S3Random2_params_t *)cache->eviction_params;
     //We free the request
@@ -178,7 +178,7 @@ static void S3Random_free(cache_t *cache) {
  * @param req
  * @return true if cache hit, false if cache miss
  */
-static bool S3Random_get(cache_t *cache, const request_t *req) {
+static bool S3Randomtwo_get(cache_t *cache, const request_t *req) {
     S3Random2_params_t *params = (S3Random2_params_t *)cache->eviction_params;
 
 
@@ -210,7 +210,7 @@ static bool S3Random_get(cache_t *cache, const request_t *req) {
  *  and if the object is expired, it is removed from the cache
  * @return the object or NULL if not found
  */
-static cache_obj_t *S3Random_find(cache_t *cache, const request_t *req,
+static cache_obj_t *S3Randomtwo_find(cache_t *cache, const request_t *req,
                                 const bool update_cache) {
 
     S3Random2_params_t *params = (S3Random2_params_t *)cache->eviction_params;
@@ -240,8 +240,8 @@ static cache_obj_t *S3Random_find(cache_t *cache, const request_t *req,
     //on small cache???
     cache_obj_t *obj =small->find(small,req,true);
     if (obj != NULL) {
-        //we increase the frequency
-        obj->S3Randomfreq.freq+=1;
+        //We promote from small to main cache
+        obj->S3Random.promoted=true;
         return obj;
     }
     //on ghost queue???
@@ -254,9 +254,6 @@ static cache_obj_t *S3Random_find(cache_t *cache, const request_t *req,
     }
     //on main cache???
     obj=main->find(main,req,true);
-    if (obj !=NULL){
-        obj->S3Randomfreq.freq+=1;
-    }
     return obj;
 }
 
@@ -271,7 +268,7 @@ static cache_obj_t *S3Random_find(cache_t *cache, const request_t *req,
  * @param req
  * @return the inserted object
  */
-static cache_obj_t *S3Random_insert(cache_t *cache, const request_t *req) {
+static cache_obj_t *S3Randomtwo_insert(cache_t *cache, const request_t *req) {
 
     S3Random2_params_t *params = (S3Random2_params_t *)cache->eviction_params;
     //We define the caches  to avoid redundancy
@@ -306,8 +303,8 @@ static cache_obj_t *S3Random_insert(cache_t *cache, const request_t *req) {
       //we insert it to the small cache
       obj= small->insert(small,req);
     }
-    obj->S3Randomfreq.freq=0;
-    return obj;
+
+  return obj;
 }
 
 /**
@@ -320,12 +317,12 @@ static cache_obj_t *S3Random_insert(cache_t *cache, const request_t *req) {
  * @param cache the cache
  * @return the object to be evicted
  */
-static cache_obj_t *S3Random_to_evict(cache_t *cache, const request_t *req) {
+static cache_obj_t *S3Randomtwo_to_evict(cache_t *cache, const request_t *req) {
   assert(false);
   return NULL;
 }
 
-static void S3Random_evict_small(cache_t *cache, const request_t *req) {
+static void S3Randomtwo_evict_small(cache_t *cache, const request_t *req) {
 
     S3Random2_params_t *params = (S3Random2_params_t *)cache->eviction_params;
     //We define the caches to avoid redundancy
@@ -366,7 +363,7 @@ static void S3Random_evict_small(cache_t *cache, const request_t *req) {
   }
 }
 
-static void S3Random_evict_main(cache_t *cache, const request_t *req) {
+static void S3Randomtwo_evict_main(cache_t *cache, const request_t *req) {
     S3Random2_params_t *params = (S3Random2_params_t *)cache->eviction_params;
     //We define the caches to avoid redundancy
     cache_t *main=params->main_random;
@@ -405,7 +402,7 @@ static void S3Random_evict_main(cache_t *cache, const request_t *req) {
  * @param req not used
  * @param evicted_obj if not NULL, return the evicted object to caller
  */
-static void S3Random_evict(cache_t *cache, const request_t *req) {
+static void S3Randomtwo_evict(cache_t *cache, const request_t *req) {
 
     S3Random2_params_t *params = (S3Random2_params_t *)cache->eviction_params;
     //We define the caches to avoid redundancy
@@ -414,10 +411,10 @@ static void S3Random_evict(cache_t *cache, const request_t *req) {
     cache_t *ghost=params->ghost_random;
     // if the main is full we evict the main cache
     if (main->get_occupied_byte(main) > main->cache_size ||small->get_occupied_byte(small) == 0) {
-      return S3Random_evict_main(cache, req);
+      return S3Randomtwo_evict_main(cache, req);
     }
     //else we evict the small cache
-    return S3Random_evict_small(cache, req);
+    return S3Randomtwo_evict_small(cache, req);
 }
 
 /**
@@ -433,7 +430,7 @@ static void S3Random_evict(cache_t *cache, const request_t *req) {
  * @return true if the object is removed, false if the object is not in the
  * cache
  */
-static bool S3Random_remove(cache_t *cache, const obj_id_t obj_id) {
+static bool S3Randomtwo_remove(cache_t *cache, const obj_id_t obj_id) {
 
     S3Random2_params_t *params = (S3Random2_params_t *)cache->eviction_params;
     //We define the caches to avoid redundancy
@@ -449,7 +446,7 @@ static bool S3Random_remove(cache_t *cache, const obj_id_t obj_id) {
     return removed;
 }
 
-static inline int64_t S3Random_get_occupied_byte(const cache_t *cache) {
+static inline int64_t S3Randomtwo_get_occupied_byte(const cache_t *cache) {
     S3Random2_params_t *params = (S3Random2_params_t *)cache->eviction_params;
     //We define the caches to avoid redundancy
     cache_t *small= params->small_random;
@@ -459,7 +456,7 @@ static inline int64_t S3Random_get_occupied_byte(const cache_t *cache) {
     return small->get_occupied_byte(small)+main->get_occupied_byte(main);
 }
 
-static inline int64_t S3Random_get_n_obj(const cache_t *cache) {
+static inline int64_t S3Randomtwo_get_n_obj(const cache_t *cache) {
     S3Random2_params_t *params = (S3Random2_params_t *)cache->eviction_params;
     //We define the caches to avoid redundancy
     cache_t *small= params->small_random;
@@ -470,7 +467,7 @@ static inline int64_t S3Random_get_n_obj(const cache_t *cache) {
 }
 
 
-static inline bool S3Random_can_insert(cache_t *cache, const request_t *req) {
+static inline bool S3Randomtwo_can_insert(cache_t *cache, const request_t *req) {
     S3Random2_params_t *params = (S3Random2_params_t *)cache->eviction_params;
     //We define the caches to avoid redundancy
     cache_t *small= params->small_random;
